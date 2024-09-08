@@ -1,44 +1,12 @@
 import axios from "axios";
 
-export async function getPokemons(endpoint: string) {
-  const baseUrl = "https://pokeapi.co/api/v2/";
-  const finalUrl = baseUrl + endpoint;
-
-  return new Promise((resolve, reject) => {
-    axios
-      .get(finalUrl)
-      .then(async (response) => {
-        const pokemons = response.data.results;
-        console.log("data", response.data);
-        let pokemonArray = [];
-        for await (const poke of pokemons) {
-          const pokeDetails = await getDetail(poke.url);
-          pokemonArray.push(pokeDetails);
-        }
-        resolve(pokemonArray);
-        // return pokemonArray
-      })
-      .catch((error) => {
-        reject({});
-        // return []
-      });
-  });
+// Definindo a estrutura básica do Pokémon
+export interface PokemonBasic {
+  name: string;
+  url: string;
 }
 
-export async function getDetail(url: string) {
-  return new Promise((resolve, reject) => {
-    axios
-      .get(url)
-      .then((response) => {
-        resolve(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-        reject({});
-      });
-  });
-}
-
+// Definindo a estrutura completa do Pokémon
 export interface Pokemon {
   abilities: Array<any>;
   base_experience: number;
@@ -54,13 +22,40 @@ export interface Pokemon {
   order: number;
   past_types: Array<any>;
   species: any;
-  sprites: any;
+  sprites: {
+    front_default: string;
+    [key: string]: any; // Para permitir outras propriedades do objeto sprites
+  };
   stats: Array<any>;
-  types: Array<any>;
+  types: Array<{
+    type: {
+      name: string;
+    };
+  }>;
   weight: number;
 }
 
-interface PokemonBasic {
-  name: string;
-  url: string;
+// Função para obter uma lista básica de Pokémon
+export async function getPokemons(endpoint: string): Promise<PokemonBasic[]> {
+  const baseUrl = "https://pokeapi.co/api/v2/";
+  const finalUrl = baseUrl + endpoint;
+
+  try {
+    const response = await axios.get(finalUrl);
+    return response.data.results; // Retorna uma lista de Pokémon básicos
+  } catch (error) {
+    console.error("Error fetching pokemons:", error);
+    return []; // Retorna uma lista vazia em caso de erro
+  }
+}
+
+// Função para obter detalhes de um Pokémon específico
+export async function getDetail(url: string): Promise<Pokemon> {
+  try {
+    const response = await axios.get(url);
+    return response.data; // Retorna os detalhes do Pokémon
+  } catch (error) {
+    console.error("Error fetching pokemon details:", error);
+    return {} as Pokemon; // Retorna um objeto vazio em caso de erro
+  }
 }

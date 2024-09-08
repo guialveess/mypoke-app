@@ -8,9 +8,7 @@ import Modal from "../components/modal";
 import Paginator from "../components/paginator";
 import { getDetail, getPokemons, Pokemon } from "../util/api";
 
-import Pokemon1 from "/public/image/pokemon-1.png";
-import Pokemon2 from "/public/image/pokemon-2.png";
-import Pokemon3 from "/public/image/pokemon-3.png";
+import Pokemon1 from "../public/image/personagem-tonerisemfundo.png";
 
 export default function Home() {
   const [pokemons, setPokemons] = useState<any>([]);
@@ -55,32 +53,17 @@ export default function Home() {
       {/* HERO */}
       <div className="hero min-h-screen bg-white">
         <div className="hero-content flex-col lg:flex-row-reverse lg:justify-around w-[90%] mx-auto">
-          <div className="w-60 h-60 relative">
+          <div className="w-60 h-60 relative flex justify-center items-center mx-auto">
             <Image
               unoptimized
               src={Pokemon1}
               alt="Pokemon 1"
               width={200}
               height={300}
-              className="absolute -bottom-8 -right-10 z-30"
-            />
-            <Image
-              unoptimized
-              src={Pokemon2}
-              alt="Pokemon 2"
-              width={200}
-              height={300}
-              className="absolute z-10 right-4"
-            />
-            <Image
-              unoptimized
-              src={Pokemon3}
-              alt="Pokemon 3"
-              width={200}
-              height={300}
-              className="absolute -top-20 -left-10"
+              className="absolute -bottom-8 z-30"
             />
           </div>
+
           <div className="max-w-lg">
             <h1 className="text-4xl font-black text-center lg:text-left mt-9 lg:mt-0">
               Todos os dados Pokémon que você precisa em um só lugar!

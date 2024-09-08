@@ -1,13 +1,12 @@
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import Layout from "../components/layout";
 import Paginator from "../components/paginator";
 import TypePills from "../components/type-pills";
-import { getDetail, Pokemon } from "../util/api";
+import { getPokemons, getDetail, Pokemon, PokemonBasic } from "../util/api";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 
-// Importa o Lottie dinamicamente
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 import pokeballAnimation from "../public/lottie/pokeball.json";
 
@@ -26,18 +25,16 @@ export default function PokemonSearch() {
 
   const initialFetch = async () => {
     try {
-      const result = await getDetail(
-        "https://pokeapi.co/api/v2/pokemon?limit=1000"
-      );
+      const basicPokemons = await getPokemons("pokemon?limit=1000");
 
-      if (result && Array.isArray(result.results)) {
-        console.log("Fetched Pokémon list:", result);
-        const pokemonDetails = await fetchPokemonsDetails(result.results);
+      if (basicPokemons && Array.isArray(basicPokemons)) {
+        console.log("Fetched Pokémon list:", basicPokemons);
+        const pokemonDetails = await fetchPokemonsDetails(basicPokemons);
         setListPokemons(pokemonDetails);
         slicePokemon(pokemonDetails);
         setLoading(false); // Define o carregamento como falso quando os dados são carregados
       } else {
-        console.error("Unexpected result structure:", result);
+        console.error("Unexpected result structure:", basicPokemons);
         setLoading(false); // Define o carregamento como falso em caso de erro
       }
     } catch (error) {
@@ -46,7 +43,7 @@ export default function PokemonSearch() {
     }
   };
 
-  const fetchPokemonsDetails = async (pokemonList: { url: string }[]) => {
+  const fetchPokemonsDetails = async (pokemonList: PokemonBasic[]) => {
     try {
       const temp: Pokemon[] = [];
       for (const poke of pokemonList) {
