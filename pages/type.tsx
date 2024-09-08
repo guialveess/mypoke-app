@@ -18,6 +18,7 @@ export default function PokemonSearch() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     initialFetch();
@@ -25,6 +26,7 @@ export default function PokemonSearch() {
 
   const initialFetch = async () => {
     try {
+      setLoading(true);
       const basicPokemons = await getPokemons("pokemon?limit=1000");
 
       if (basicPokemons && Array.isArray(basicPokemons)) {
@@ -32,14 +34,15 @@ export default function PokemonSearch() {
         const pokemonDetails = await fetchPokemonsDetails(basicPokemons);
         setListPokemons(pokemonDetails);
         slicePokemon(pokemonDetails);
-        setLoading(false); // Define o carregamento como falso quando os dados são carregados
       } else {
         console.error("Unexpected result structure:", basicPokemons);
-        setLoading(false); // Define o carregamento como falso em caso de erro
+        setError("Invalid Pokémon data structure received.");
       }
     } catch (error) {
       console.error("Error fetching Pokémon list:", error);
-      setLoading(false); // Define o carregamento como falso em caso de erro
+      setError("Failed to fetch Pokémon data.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,7 +83,9 @@ export default function PokemonSearch() {
   };
 
   useEffect(() => {
-    slicePokemon(listPokemons);
+    if (listPokemons.length > 0) {
+      slicePokemon(listPokemons);
+    }
   }, [currentPage, searchTerm, listPokemons]);
 
   useEffect(() => {
@@ -109,7 +114,7 @@ export default function PokemonSearch() {
               <Lottie
                 animationData={pokeballAnimation}
                 loop={true}
-                style={{ width: "50px", height: "50px" }} // Ajuste o tamanho da animação aqui
+                style={{ width: "50px", height: "50px" }}
               />
             )}
           </div>
@@ -117,44 +122,49 @@ export default function PokemonSearch() {
           <div className="text-4xl font-black mb-4">Buscar Pokémon</div>
         </div>
 
+        {/* ERROR MESSAGE */}
+        {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+
         {/* POKEMON CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
-          {!loading && displayedPokemons.length > 0 ? (
-            displayedPokemons.map((item: Pokemon, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center bg-white/50 rounded-lg p-4 shadow-md cursor-pointer"
-                onClick={() => pokemonClicked(item)}
-              >
-                {item.sprites.front_default && (
-                  <Image
-                    unoptimized
-                    src={item.sprites.front_default}
-                    loader={() => item.sprites.front_default}
-                    alt={item.name + " front"}
-                    width={100}
-                    height={100}
-                  />
-                )}
-                <div className="font-black text-xl my-2">#{item.id}</div>
-                <div className="font-black text-xl capitalize">{item.name}</div>
+          {!loading && displayedPokemons.length > 0
+            ? displayedPokemons.map((item: Pokemon, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col items-center bg-white/50 rounded-lg p-4 shadow-md cursor-pointer"
+                  onClick={() => pokemonClicked(item)}
+                >
+                  {item.sprites.front_default && (
+                    <Image
+                      unoptimized
+                      src={item.sprites.front_default}
+                      loader={() => item.sprites.front_default}
+                      alt={item.name + " front"}
+                      width={100}
+                      height={100}
+                    />
+                  )}
+                  <div className="font-black text-xl my-2">#{item.id}</div>
+                  <div className="font-black text-xl capitalize">
+                    {item.name}
+                  </div>
 
-                <div className="flex flex-row item-center justify-center gap-2 mt-2">
-                  {item.types.map((type, index) => (
-                    <TypePills
-                      key={index}
-                      type={type.type.name}
-                      index={index}
-                    ></TypePills>
-                  ))}
+                  <div className="flex flex-row item-center justify-center gap-2 mt-2">
+                    {item.types.map((type, index) => (
+                      <TypePills
+                        key={index}
+                        type={type.type.name}
+                        index={index}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center text-lg font-semibold">
-              No Pokémon found
-            </div>
-          )}
+              ))
+            : !loading && (
+                <div className="text-center text-lg font-semibold">
+                  Nenhum Pokémon encontrado.
+                </div>
+              )}
         </div>
 
         {/* PAGINATOR */}
